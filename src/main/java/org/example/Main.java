@@ -22,7 +22,7 @@ public class Main extends SimpleApplication {
         Texture tex = assetManager.loadTexture("textures/semibot_01.png");
         mat.setTexture("ColorMap", tex);
         model.setMaterial(mat);
-        mat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+        //mat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
 
         rootNode.attachChild(model);
