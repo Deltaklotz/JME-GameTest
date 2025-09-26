@@ -42,11 +42,16 @@ public class Main extends SimpleApplication {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
 
+        //initialize textures
+        Texture semibot_tex = assetManager.loadTexture("textures/semibot_01.png");
+        Texture skybox_tex = assetManager.loadTexture("textures/semibot_01.png");
+        Texture ground_tex = assetManager.loadTexture("textures/semibot_01.png");
+
         // Ground
-        Box groundBox = new Box(100, 0.1f, 100);
+        Box groundBox = new Box(10, 0.1f, 10);
         Geometry ground = new Geometry("Ground", groundBox);
         Material groundMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        groundMat.setColor("Color", ColorRGBA.Gray);
+        groundMat.setTexture("ColorMap", semibot_tex);
         ground.setMaterial(groundMat);
         ground.setLocalTranslation(0, -0.1f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
@@ -54,14 +59,14 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
-        // Load model (lowercase folders)
+        // Load model
         Spatial model = assetManager.loadModel("models/semibot.obj");
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex = assetManager.loadTexture("textures/semibot_01.png");
-        mat.setTexture("ColorMap", tex);
+        mat.setTexture("ColorMap", semibot_tex);
         mat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
         model.setMaterial(mat);
-        model.setLocalTranslation(0, 0, 5);
+        model.setLocalTranslation(0f, 1f, -5f);
+        model.setLocalScale(1);
         rootNode.attachChild(model);
 
         // Character (first-person)
