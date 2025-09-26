@@ -114,8 +114,8 @@ public class Main extends SimpleApplication {
         if (backward) walkDirection.addLocal(cam.getDirection().negate());
 
         walkDirection.y = 0; // keep horizontal
-        player.setWalkDirection(walkDirection.mult(0.5f));
-        player.setJumpSpeed(15f); // lower jump
+        player.setWalkDirection(walkDirection.mult(0.2f));
+        player.setJumpSpeed(10f); // lower jump
         player.setFallSpeed(30f);
         player.setGravity(30f);
         cam.setLocation(player.getPhysicsLocation().add(0, 1.5f, 0));
