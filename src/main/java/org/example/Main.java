@@ -18,6 +18,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 
 public class Main extends SimpleApplication {
 
@@ -46,6 +47,9 @@ public class Main extends SimpleApplication {
         Texture semibot_tex = assetManager.loadTexture("textures/semibot_01.png");
         Texture skybox_tex = assetManager.loadTexture("textures/semibot_01.png");
         Texture ground_tex = assetManager.loadTexture("textures/semibot_01.png");
+
+        rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
+
 
         // Ground
         Box groundBox = new Box(10, 0.1f, 10);
