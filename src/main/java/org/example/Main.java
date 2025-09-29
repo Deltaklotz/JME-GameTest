@@ -116,6 +116,10 @@ public class Main extends SimpleApplication {
         model.setLocalScale(1.25f);
         rootNode.attachChild(model);
 
+        //instantly remove the first model, comment to show
+        model.removeFromParent();
+        bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
+
 
         // Character (first-person)
         CapsuleCollisionShape capsule = new CapsuleCollisionShape(1f, 2f);
