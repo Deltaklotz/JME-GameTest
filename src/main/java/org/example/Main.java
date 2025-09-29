@@ -53,8 +53,8 @@ public class Main extends SimpleApplication {
         Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
         ground_tex.setWrap(Texture.WrapMode.Repeat);
 
-        rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
-
+        //rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
+        viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
 
         // Ground
         Box groundBox = new Box(50, 0.1f, 50);
@@ -73,6 +73,7 @@ public class Main extends SimpleApplication {
         Spatial model = assetManager.loadModel("models/semibot.obj");
 
         CapsuleCollisionShape modelcoll = new CapsuleCollisionShape(1f,2f);
+
         RigidBodyControl modelcontroll = new RigidBodyControl(modelcoll, 0);
         model.addControl(modelcontroll);
         bulletAppState.getPhysicsSpace().add(modelcontroll);
@@ -81,7 +82,7 @@ public class Main extends SimpleApplication {
         mat.setTexture("ColorMap", semibot_tex);
         mat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
         model.setMaterial(mat);
-        model.setLocalTranslation(0,0,100000);
+        model.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(0,2,5));
         model.setLocalScale(1.25f);
         rootNode.attachChild(model);
 
