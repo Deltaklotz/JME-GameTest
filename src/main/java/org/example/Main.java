@@ -1,5 +1,6 @@
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
@@ -11,6 +12,7 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Plane;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
@@ -41,17 +43,21 @@ public class Main extends SimpleApplication {
     public void simpleInitApp() {
         // Physics
         bulletAppState = new BulletAppState();
+        bulletAppState.setDebugEnabled(true);
+
         stateManager.attach(bulletAppState);
 
         //initialize textures
         Texture semibot_tex = assetManager.loadTexture("textures/semibot_01.png");
         Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
+        ground_tex.setWrap(Texture.WrapMode.Repeat);
 
         rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
 
 
         // Ground
-        Box groundBox = new Box(10, 0.1f, 10);
+        Box groundBox = new Box(50, 0.1f, 50);
+        groundBox.scaleTextureCoordinates(new Vector2f(10, 10));
         Geometry ground = new Geometry("Ground", groundBox);
         Material groundMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         groundMat.setTexture("ColorMap", ground_tex);
