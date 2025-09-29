@@ -2,6 +2,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -70,12 +71,18 @@ public class Main extends SimpleApplication {
 
         // Load model
         Spatial model = assetManager.loadModel("models/semibot.obj");
+
+        CapsuleCollisionShape modelcoll = new CapsuleCollisionShape(1f,2f);
+        RigidBodyControl modelcontroll = new RigidBodyControl(modelcoll, 0);
+        model.addControl(modelcontroll);
+        bulletAppState.getPhysicsSpace().add(modelcontroll);
+
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setTexture("ColorMap", semibot_tex);
         mat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
         model.setMaterial(mat);
-        model.setLocalTranslation(0f, 1f, -5f);
-        model.setLocalScale(1);
+        model.setLocalTranslation(0,0,100000);
+        model.setLocalScale(1.25f);
         rootNode.attachChild(model);
 
         // Character (first-person)
