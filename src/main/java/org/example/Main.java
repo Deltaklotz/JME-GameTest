@@ -45,8 +45,7 @@ public class Main extends SimpleApplication {
 
         //initialize textures
         Texture semibot_tex = assetManager.loadTexture("textures/semibot_01.png");
-        Texture skybox_tex = assetManager.loadTexture("textures/semibot_01.png");
-        Texture ground_tex = assetManager.loadTexture("textures/semibot_01.png");
+        Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
 
         rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
 
@@ -55,7 +54,7 @@ public class Main extends SimpleApplication {
         Box groundBox = new Box(10, 0.1f, 10);
         Geometry ground = new Geometry("Ground", groundBox);
         Material groundMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        groundMat.setTexture("ColorMap", semibot_tex);
+        groundMat.setTexture("ColorMap", ground_tex);
         ground.setMaterial(groundMat);
         ground.setLocalTranslation(0, -0.1f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
