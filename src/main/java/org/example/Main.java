@@ -24,6 +24,7 @@ import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main extends SimpleApplication {
 
@@ -37,6 +38,39 @@ public class Main extends SimpleApplication {
     private ArrayList<Spatial> playerEntities = new ArrayList<Spatial>();
 
     public static void main(String[] args) {
+        String serverAdress;
+        String clientID;
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter IP Adress of Server:");
+        serverAdress = scanner.nextLine();
+        while(true) {
+            System.out.println("Enter Username:");
+            clientID = scanner.nextLine();
+            if(clientID.contains("$") || clientID.contains("§") || clientID.contains("&")){
+                System.out.println("Invalid Usrename, cannot contain Symbols: [§, $, &]");
+            }
+            else {
+                break;
+            }
+        }
+
+        Thread socketThread = new Thread(){
+            public void run(){
+
+                while(true) {
+                    try {
+                        System.out.println("thread still running");
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        };
+        socketThread.start();
+
+
         Main app = new Main();
         AppSettings settings = new AppSettings(true);
         settings.setResolution(1920, 1080); // set to your monitor resolution
@@ -176,5 +210,13 @@ public class Main extends SimpleApplication {
         player.setFallSpeed(30f);
         player.setGravity(30f);
         cam.setLocation(player.getPhysicsLocation().add(0, 1.5f, 0));
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        // cleanup logic here
+        System.out.println("Window closed. Stopping code.");
+        System.exit(0); // guarantees JVM exit
     }
 }
