@@ -1,3 +1,4 @@
+
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
@@ -23,8 +24,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main extends SimpleApplication {
 
@@ -33,13 +33,17 @@ public class Main extends SimpleApplication {
     private Vector3f walkDirection = new Vector3f();
     private boolean left, right, forward, backward;
 
+    public Hashtable<String, Spatial> playerEntities = new Hashtable<>();
+    public Hashtable<String, String> playerData = new Hashtable<>();
 
-    //player mode list
-    private ArrayList<Spatial> playerEntities = new ArrayList<Spatial>();
+    public static String serverAdress;
+    public static String clientID;
+
 
     public static void main(String[] args) {
-        String serverAdress;
-        String clientID;
+        //player mode list
+
+
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Enter IP Adress of Server:");
@@ -60,7 +64,7 @@ public class Main extends SimpleApplication {
 
                 while(true) {
                     try {
-                        System.out.println("thread still running");
+
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
@@ -155,6 +159,7 @@ public class Main extends SimpleApplication {
         bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
 
 
+
         // Character (first-person)
         CapsuleCollisionShape capsule = new CapsuleCollisionShape(1f, 2f);
         player = new CharacterControl(capsule, 0.05f);
@@ -210,6 +215,17 @@ public class Main extends SimpleApplication {
         player.setFallSpeed(30f);
         player.setGravity(30f);
         cam.setLocation(player.getPhysicsLocation().add(0, 1.5f, 0));
+
+        Enumeration<String> playerNames = playerData.keys();
+        while (playerNames.hasMoreElements()) {
+            String PName = playerNames.nextElement();
+            if(playerEntities.containsKey(PName)){
+               //alter positions
+            }
+            else{
+                //create new spatial and add it to the dict, also alter positions
+            }
+        }
     }
 
     @Override
