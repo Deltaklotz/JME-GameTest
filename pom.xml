@@ -45,6 +45,12 @@
             <artifactId>jme3-jbullet</artifactId>
             <version>3.6.1-stable</version>
         </dependency>
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.5.7</version>
+        </dependency>
+
 
     </dependencies>
 
