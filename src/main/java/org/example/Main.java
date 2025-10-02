@@ -12,10 +12,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Plane;
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
+import com.jme3.math.*;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
@@ -25,6 +22,7 @@ import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
 import java.util.*;
+import org.example.RotationUtil;
 
 public class Main extends SimpleApplication {
 
@@ -35,9 +33,22 @@ public class Main extends SimpleApplication {
 
     public Hashtable<String, Spatial> playerEntities = new Hashtable<>();
     public Hashtable<String, String> playerData = new Hashtable<>();
+    // strong structure for entitydata:
+    // {playerName : Yrotation § playerX § playerY § playerZ}
 
     public static String serverAdress;
     public static String clientID;
+
+    //declare materials
+    public static Material semiMat1;
+    public static Material semiMat2;
+    public static Material semiMat3;
+    public static Material semiMat4;
+    public static Material semiMat5;
+    public static Material semiMat6;
+    public static Material semiMat7;
+    public static Material semiMat8;
+    public static Material semiMat9;
 
 
     public static void main(String[] args) {
@@ -107,15 +118,15 @@ public class Main extends SimpleApplication {
         ground_tex.setWrap(Texture.WrapMode.Repeat);
 
         //create materials
-        Material semiMat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat2 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat4 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat5 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat6 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat7 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat8 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material semiMat9 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat2 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat4 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat5 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat6 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat7 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat8 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        semiMat9 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         semiMat1.setTexture("ColorMap", semibot_1);
         semiMat2.setTexture("ColorMap", semibot_2);
         semiMat3.setTexture("ColorMap", semibot_3);
@@ -151,12 +162,13 @@ public class Main extends SimpleApplication {
         bulletAppState.getPhysicsSpace().add(modelcontroll);
         model.setMaterial(semiMat1);
         model.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(0,2,5));
+        model.getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0,90,0));
         model.setLocalScale(1.25f);
         rootNode.attachChild(model);
 
         //instantly remove the first model, comment to show
-        model.removeFromParent();
-        bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
+        //model.removeFromParent();
+        //bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
 
 
 
@@ -220,10 +232,20 @@ public class Main extends SimpleApplication {
         while (playerNames.hasMoreElements()) {
             String PName = playerNames.nextElement();
             if(playerEntities.containsKey(PName)){
-               //alter positions
+               String[] playerArray = playerData.get(PName).split("§");
+               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
+               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0, Float.parseFloat(playerArray[0]), 0));
             }
             else{
-                //create new spatial and add it to the dict, also alter positions
+                Spatial newP = assetManager.loadModel("models/semibot.obj");
+                CapsuleCollisionShape newMC = new CapsuleCollisionShape(1f,2f);
+                RigidBodyControl newMCTRL = new RigidBodyControl(newMC, 0);
+                newP.addControl(newMCTRL);
+                bulletAppState.getPhysicsSpace().add(newMCTRL);
+                newP.setMaterial(semiMat1);
+                newP.setLocalScale(1.25f);
+                rootNode.attachChild(newP);
+                playerEntities.put(PName, newP);
             }
         }
     }
