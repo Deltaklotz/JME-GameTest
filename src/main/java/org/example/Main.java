@@ -167,8 +167,8 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(model);
 
         //instantly remove the first model, comment to show
-        //model.removeFromParent();
-        //bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
+        model.removeFromParent();
+        bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
 
 
 
