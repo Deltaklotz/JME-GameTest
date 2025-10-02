@@ -1,9 +1,10 @@
+package org.example;
+
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
 import java.net.InetSocketAddress;
-import java.sql.Array;
 import java.util.ArrayList;
 
 public class GameServer extends WebSocketServer {

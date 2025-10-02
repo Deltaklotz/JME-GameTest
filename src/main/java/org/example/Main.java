@@ -14,6 +14,7 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.*;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
@@ -23,6 +24,7 @@ import com.jme3.util.SkyFactory;
 
 import java.util.*;
 import org.example.RotationUtil;
+import org.example.TextUtil;
 
 public class Main extends SimpleApplication {
 
@@ -31,8 +33,8 @@ public class Main extends SimpleApplication {
     private Vector3f walkDirection = new Vector3f();
     private boolean left, right, forward, backward;
 
-    public Hashtable<String, Spatial> playerEntities = new Hashtable<>();
-    public Hashtable<String, String> playerData = new Hashtable<>();
+    public static Hashtable<String, Node> playerEntities = new Hashtable<>();
+    public static Hashtable<String, String> playerData = new Hashtable<>();
     // strong structure for entitydata:
     // {playerName : Yrotation § playerX § playerY § playerZ}
 
@@ -102,6 +104,10 @@ public class Main extends SimpleApplication {
         bulletAppState.setDebugEnabled(true);
 
         stateManager.attach(bulletAppState);
+
+        //test data for testing entity creation
+        playerData.put("heimat0729", "130§5§0§5");
+        //playerData.put("test2", "130§5§0§10");
 
         //initialize textures
         Texture semibot_1 = assetManager.loadTexture("textures/semibot/semibot_01.png");
@@ -233,19 +239,22 @@ public class Main extends SimpleApplication {
             String PName = playerNames.nextElement();
             if(playerEntities.containsKey(PName)){
                String[] playerArray = playerData.get(PName).split("§");
-               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
+               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]) + 2f, Float.parseFloat(playerArray[3])));
                playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0, Float.parseFloat(playerArray[0]), 0));
             }
             else{
                 Spatial newP = assetManager.loadModel("models/semibot.obj");
+                Node newPnode = new Node(PName);
+                newPnode.attachChild(newP);
                 CapsuleCollisionShape newMC = new CapsuleCollisionShape(1f,2f);
                 RigidBodyControl newMCTRL = new RigidBodyControl(newMC, 0);
-                newP.addControl(newMCTRL);
+                newPnode.addControl(newMCTRL);
                 bulletAppState.getPhysicsSpace().add(newMCTRL);
-                newP.setMaterial(semiMat1);
-                newP.setLocalScale(1.25f);
-                rootNode.attachChild(newP);
-                playerEntities.put(PName, newP);
+                newP.setMaterial(semiMat2);
+                newPnode.setLocalScale(1.25f);
+                TextUtil.addNameTag(newPnode, PName, assetManager);
+                rootNode.attachChild(newPnode);
+                playerEntities.put(PName, newPnode);
             }
         }
     }
