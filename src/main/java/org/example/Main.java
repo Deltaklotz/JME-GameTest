@@ -1,3 +1,4 @@
+package org.example;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
@@ -27,6 +28,7 @@ import org.example.RotationUtil;
 import org.example.TextUtil;
 
 public class Main extends SimpleApplication {
+    public static Main instance; // static reference for networking thread
 
     private BulletAppState bulletAppState;
     private CharacterControl player;
@@ -53,7 +55,7 @@ public class Main extends SimpleApplication {
     public static Material semiMat9;
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         //player mode list
 
 
@@ -72,20 +74,11 @@ public class Main extends SimpleApplication {
             }
         }
 
-        Thread socketThread = new Thread(){
-            public void run(){
 
-                while(true) {
-                    try {
 
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        };
-        socketThread.start();
+        NetworkThread client = new NetworkThread("127.0.0.1", 8080);
+        client.connect();
+
 
 
         Main app = new Main();
@@ -97,8 +90,31 @@ public class Main extends SimpleApplication {
         app.start();
     }
 
+        // Called by networking thread
+        public Vector3f getPlayerPosition() {
+            if (player == null) {
+                return new Vector3f(0,0,0); // or skip sending
+            }
+            return player.getPhysicsLocation().clone(); // clone to avoid threading issues
+        }
+
+        public float getPlayerRotationY() {
+            if (player == null) {
+                return 0f;
+            }
+
+            Quaternion camRot = cam.getRotation();
+            float[] angles = camRot.toAngles(null); // returns [X, Y, Z] in radians
+            float yaw = angles[1]; // Yaw around Y-axis in radians
+            float yawDegrees = yaw * FastMath.RAD_TO_DEG;
+            return yawDegrees;
+        }
+
+
     @Override
     public void simpleInitApp() {
+        instance = this;
+
         // Physics
         bulletAppState = new BulletAppState();
         bulletAppState.setDebugEnabled(true);
@@ -106,7 +122,7 @@ public class Main extends SimpleApplication {
         stateManager.attach(bulletAppState);
 
         //test data for testing entity creation
-        playerData.put("heimat0729", "130§5§0§5");
+        playerData.put("heimat0729", "130§5§2‚§5");
         //playerData.put("test2", "130§5§0§10");
 
         //initialize textures
@@ -239,8 +255,9 @@ public class Main extends SimpleApplication {
             String PName = playerNames.nextElement();
             if(playerEntities.containsKey(PName)){
                String[] playerArray = playerData.get(PName).split("§");
-               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]) + 2f, Float.parseFloat(playerArray[3])));
-               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0, Float.parseFloat(playerArray[0]), 0));
+               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
+
+               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0f, Float.parseFloat(playerArray[0]), 0f));
             }
             else{
                 Spatial newP = assetManager.loadModel("models/semibot.obj");

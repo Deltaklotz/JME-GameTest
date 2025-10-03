@@ -28,6 +28,8 @@ public class GameServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
+        System.out.println(message);
+
         String[] clientdata = message.split("\\$");
         if(playerids.contains(clientdata[0])){
             playerdata.set(playerids.indexOf(clientdata[0]), message);
