@@ -29,7 +29,7 @@ public class NetworkThread extends WebSocketClient {
                         String coord = Main.clientID + "$" + rotY + "§" + pos.x + "§" + pos.y + "§" + pos.z;
                         send(coord); // this is WebSocketClient.send(...)
                     }
-                    Thread.sleep(100); // 10 per second
+                    Thread.sleep(33); // 10 per second
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -23,6 +23,9 @@ import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import org.example.RotationUtil;
 import org.example.TextUtil;
@@ -53,6 +56,7 @@ public class Main extends SimpleApplication {
     public static Material semiMat7;
     public static Material semiMat8;
     public static Material semiMat9;
+    public static ArrayList<Material> matList = new ArrayList<Material>();
 
 
     public static void main(String[] args) throws Exception {
@@ -76,7 +80,7 @@ public class Main extends SimpleApplication {
 
 
 
-        NetworkThread client = new NetworkThread("127.0.0.1", 8080);
+        NetworkThread client = new NetworkThread(serverAdress, 8080);
         client.connect();
 
 
@@ -111,19 +115,29 @@ public class Main extends SimpleApplication {
         }
 
 
+    public int getTextureIndex(String username){
+        int sum = 0;
+        for (char c : username.toCharArray()){
+            sum += (int) c;
+        }
+
+        int firstDigit = Integer.toString(sum).charAt(0) - '0';
+        return firstDigit;
+    }
+
+
     @Override
     public void simpleInitApp() {
         instance = this;
 
         // Physics
         bulletAppState = new BulletAppState();
-        bulletAppState.setDebugEnabled(true);
+        //bulletAppState.setDebugEnabled(true);
 
         stateManager.attach(bulletAppState);
 
         //test data for testing entity creation
-        playerData.put("heimat0729", "130§5§2‚§5");
-        //playerData.put("test2", "130§5§0§10");
+        //playerData.put("heimat0729", "130§5§2§5");
 
         //initialize textures
         Texture semibot_1 = assetManager.loadTexture("textures/semibot/semibot_01.png");
@@ -158,6 +172,15 @@ public class Main extends SimpleApplication {
         semiMat7.setTexture("ColorMap", semibot_7);
         semiMat8.setTexture("ColorMap", semibot_8);
         semiMat9.setTexture("ColorMap", semibot_9);
+        matList.add(semiMat1);
+        matList.add(semiMat2);
+        matList.add(semiMat3);
+        matList.add(semiMat4);
+        matList.add(semiMat5);
+        matList.add(semiMat6);
+        matList.add(semiMat7);
+        matList.add(semiMat8);
+        matList.add(semiMat9);
 
         Material groundMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         groundMat.setTexture("ColorMap", ground_tex);
@@ -255,19 +278,22 @@ public class Main extends SimpleApplication {
             String PName = playerNames.nextElement();
             if(playerEntities.containsKey(PName)){
                String[] playerArray = playerData.get(PName).split("§");
-               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
+               //playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
+                playerEntities.get(PName).setLocalTranslation(new Vector3f(Float.parseFloat(playerArray[1]), Float.parseFloat(playerArray[2]), Float.parseFloat(playerArray[3])));
 
-               playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0f, Float.parseFloat(playerArray[0]), 0f));
+                playerEntities.get(PName).setLocalRotation(RotationUtil.fromDegrees(0f, Float.parseFloat(playerArray[0]), 0f));
+                //playerEntities.get(PName).getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0f, Float.parseFloat(playerArray[0]), 0f));
             }
             else{
                 Spatial newP = assetManager.loadModel("models/semibot.obj");
                 Node newPnode = new Node(PName);
                 newPnode.attachChild(newP);
                 CapsuleCollisionShape newMC = new CapsuleCollisionShape(1f,2f);
-                RigidBodyControl newMCTRL = new RigidBodyControl(newMC, 0);
+                RigidBodyControl newMCTRL = new RigidBodyControl(newMC, 0f);
+                newMCTRL.setKinematic(true);
                 newPnode.addControl(newMCTRL);
                 bulletAppState.getPhysicsSpace().add(newMCTRL);
-                newP.setMaterial(semiMat2);
+                newP.setMaterial(matList.get(getTextureIndex(PName) - 1));
                 newPnode.setLocalScale(1.25f);
                 TextUtil.addNameTag(newPnode, PName, assetManager);
                 rootNode.attachChild(newPnode);
