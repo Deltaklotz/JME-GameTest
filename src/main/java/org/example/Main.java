@@ -11,14 +11,20 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.*;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
+import com.jme3.shadow.DirectionalLightShadowFilter;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
@@ -132,7 +138,7 @@ public class Main extends SimpleApplication {
 
         // Physics
         bulletAppState = new BulletAppState();
-        //bulletAppState.setDebugEnabled(true);
+        bulletAppState.setDebugEnabled(true);
 
         stateManager.attach(bulletAppState);
 
@@ -154,24 +160,24 @@ public class Main extends SimpleApplication {
         ground_tex.setWrap(Texture.WrapMode.Repeat);
 
         //create materials
-        semiMat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat2 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat4 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat5 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat6 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat7 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat8 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat9 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        semiMat1.setTexture("ColorMap", semibot_1);
-        semiMat2.setTexture("ColorMap", semibot_2);
-        semiMat3.setTexture("ColorMap", semibot_3);
-        semiMat4.setTexture("ColorMap", semibot_4);
-        semiMat5.setTexture("ColorMap", semibot_5);
-        semiMat6.setTexture("ColorMap", semibot_6);
-        semiMat7.setTexture("ColorMap", semibot_7);
-        semiMat8.setTexture("ColorMap", semibot_8);
-        semiMat9.setTexture("ColorMap", semibot_9);
+        semiMat1 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat3 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat4 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat5 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat6 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat7 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat8 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat9 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        semiMat1.setTexture("DiffuseMap", semibot_1);
+        semiMat2.setTexture("DiffuseMap", semibot_2);
+        semiMat3.setTexture("DiffuseMap", semibot_3);
+        semiMat4.setTexture("DiffuseMap", semibot_4);
+        semiMat5.setTexture("DiffuseMap", semibot_5);
+        semiMat6.setTexture("DiffuseMap", semibot_6);
+        semiMat7.setTexture("DiffuseMap", semibot_7);
+        semiMat8.setTexture("DiffuseMap", semibot_8);
+        semiMat9.setTexture("DiffuseMap", semibot_9);
         matList.add(semiMat1);
         matList.add(semiMat2);
         matList.add(semiMat3);
@@ -182,20 +188,35 @@ public class Main extends SimpleApplication {
         matList.add(semiMat8);
         matList.add(semiMat9);
 
-        Material groundMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        groundMat.setTexture("ColorMap", ground_tex);
+        Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        groundMat.setTexture("DiffuseMap", ground_tex);
 
-        //rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
-        viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
+        rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
+        //viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
+
+        // Create a directional light (like the sun)
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
+        rootNode.addLight(sun);
+
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(0.3f)); // softer, dimmer light
+        rootNode.addLight(ambient);
+
+        final int SHADOWMAP_SIZE=1024;
+        DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+        dlsr.setLight(sun);
+        viewPort.addProcessor(dlsr);
+
 
         // Ground
-        Box groundBox = new Box(50, 0.1f, 50);
-        groundBox.scaleTextureCoordinates(new Vector2f(10, 10));
-        Geometry ground = new Geometry("Ground", groundBox);
+        Spatial ground = assetManager.loadModel("models/hexagon.obj");
         ground.setMaterial(groundMat);
-        ground.setLocalTranslation(0, -0.1f, 0);
+        ground.setLocalTranslation(0, -1f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
         ground.addControl(groundPhys);
+        ground.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
@@ -209,6 +230,7 @@ public class Main extends SimpleApplication {
         model.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(0,2,5));
         model.getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0,90,0));
         model.setLocalScale(1.25f);
+        model.setShadowMode(RenderQueue.ShadowMode.Cast);
         rootNode.attachChild(model);
 
         //instantly remove the first model, comment to show
@@ -296,6 +318,7 @@ public class Main extends SimpleApplication {
                 newP.setMaterial(matList.get(getTextureIndex(PName) - 1));
                 newPnode.setLocalScale(1.25f);
                 TextUtil.addNameTag(newPnode, PName, assetManager);
+                newP.setShadowMode(RenderQueue.ShadowMode.Cast);
                 rootNode.attachChild(newPnode);
                 playerEntities.put(PName, newPnode);
             }
