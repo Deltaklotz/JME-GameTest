@@ -17,22 +17,27 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.*;
 import com.jme3.post.FilterPostProcessor;
+import com.jme3.renderer.Caps;
+import com.jme3.renderer.Renderer;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
+import com.jme3.scene.*;
+import com.jme3.scene.instancing.InstancedNode;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
+import com.jme3.system.JmeSystem;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+import jme3tools.optimize.GeometryBatchFactory;
 import org.example.RotationUtil;
 import org.example.TextUtil;
 
@@ -51,6 +56,7 @@ public class Main extends SimpleApplication {
 
     public static String serverAdress;
     public static String clientID;
+    public static boolean useInstancing;
 
     //declare materials
     public static Material semiMat1;
@@ -83,6 +89,10 @@ public class Main extends SimpleApplication {
                 break;
             }
         }
+        System.out.println("Use Instancing? 'no' for no, otherwise: yes");
+        String s = scanner.nextLine();
+        useInstancing = !s.equalsIgnoreCase("no");
+
 
 
 
@@ -130,6 +140,34 @@ public class Main extends SimpleApplication {
         int firstDigit = Integer.toString(sum).charAt(0) - '0';
         return firstDigit;
     }
+
+    public static Vector3f getRandomPointOnMesh(Mesh mesh) {
+        VertexBuffer posBuffer = mesh.getBuffer(VertexBuffer.Type.Position);
+        FloatBuffer fb = (FloatBuffer) posBuffer.getDataReadOnly();
+        int vertCount = mesh.getVertexCount();
+        int i = FastMath.nextRandomInt(0, vertCount - 1);
+        int index = i * 3;
+
+        float x = fb.get(index);
+        float y = fb.get(index + 1);
+        float z = fb.get(index + 2);
+
+        return new Vector3f(x, y, z);
+    }
+
+    public static Mesh getMeshFromSpatial(Spatial spatial) {
+        if (spatial instanceof Geometry) {
+            return ((Geometry) spatial).getMesh();
+        } else if (spatial instanceof Node) {
+            for (Spatial child : ((Node) spatial).getChildren()) {
+                Mesh m = getMeshFromSpatial(child);
+                if (m != null) return m;
+            }
+        }
+        return null;
+    }
+
+
 
 
     @Override
@@ -189,7 +227,8 @@ public class Main extends SimpleApplication {
         matList.add(semiMat9);
 
         Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        groundMat.setTexture("DiffuseMap", ground_tex);
+        //groundMat.setTexture("DiffuseMap", ground_tex);
+        groundMat.setColor("Diffuse",ColorRGBA.fromRGBA255(128, 128, 128, 255));
 
         rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
         //viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
@@ -211,7 +250,7 @@ public class Main extends SimpleApplication {
 
 
         // Ground
-        Spatial ground = assetManager.loadModel("models/hexagon.obj");
+        Spatial ground = assetManager.loadModel("models/untitled.obj");
         ground.setMaterial(groundMat);
         ground.setLocalTranslation(0, -1f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
@@ -219,6 +258,59 @@ public class Main extends SimpleApplication {
         ground.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
+
+        // Grass setup
+        Spatial grassSpatial = assetManager.loadModel("models/grass_tuft.obj");
+        Material grassMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture grassTex = assetManager.loadTexture("textures/foliage/grass_tuft_color.png");
+        grassMat.setTexture("ColorMap", grassTex);
+        grassMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+        grassMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        grassMat.getAdditionalRenderState().setDepthWrite(false);
+
+// Apply material to all geometries
+        grassSpatial.depthFirstTraversal(spatial -> {
+            if (spatial instanceof Geometry) {
+                ((Geometry) spatial).setMaterial(grassMat);
+                spatial.setQueueBucket(RenderQueue.Bucket.Transparent);
+                spatial.setShadowMode(RenderQueue.ShadowMode.Off);
+            }
+        });
+
+// User-defined boolean
+
+
+        if (useInstancing) {
+            grassMat.setBoolean("UseInstancing", true);
+            InstancedNode instancedGrass = new InstancedNode("grass");
+            for (int i = 0; i < 10000; i++) {
+                Spatial g = grassSpatial.clone(false);
+                g.setLocalTranslation(getRandomPointOnMesh(getMeshFromSpatial(ground)));
+                instancedGrass.attachChild(g);
+            }
+            instancedGrass.instance();
+            rootNode.attachChild(instancedGrass);
+        } else {
+            Node batchNode = new Node("grassBatch");
+            for (int i = 0; i < 100; i++) {
+                Spatial g = grassSpatial.clone(false);
+                g.setLocalTranslation(getRandomPointOnMesh(getMeshFromSpatial(ground)));
+                batchNode.attachChild(g);
+            }
+            GeometryBatchFactory.optimize(batchNode);
+            rootNode.attachChild(batchNode);
+        }
+
+
+
+
+        grassSpatial.setLocalTranslation(0,0,0);
+        grassSpatial.setLocalScale(0.5f);
+        grassSpatial.setMaterial(grassMat);
+        rootNode.attachChild(grassSpatial);
+
+
+        InstancedNode iGrass = new InstancedNode("grass");
 
         // Load model
         Spatial model = assetManager.loadModel("models/semibot.obj");
