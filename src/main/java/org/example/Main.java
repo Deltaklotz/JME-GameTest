@@ -24,6 +24,7 @@ import com.jme3.renderer.Caps;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
+import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.instancing.InstancedNode;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
@@ -255,7 +256,7 @@ public class Main extends SimpleApplication {
         // Ground
         Spatial ground = assetManager.loadModel("models/untitled.obj");
         ground.setMaterial(groundMat);
-        ground.setLocalScale(10f);
+        ground.setLocalScale(1f);
         ground.setLocalTranslation(0, -1f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
         ground.addControl(groundPhys);
@@ -263,7 +264,17 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
-        // Grass setup
+        // Hand
+        Spatial hand = assetManager.loadModel("models/hand.obj"); // or create a Box/Geometry
+        CameraNode camNode = new CameraNode("CamNode", cam);
+        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+        camNode.attachChild(hand);
+        cam.setFrustumNear(1f); // default is 1, too large for close objects
+        hand.setLocalTranslation(0.5f, 2f, -1f);
+        hand.setLocalScale(0.2f); // scale to match scene
+        rootNode.attachChild(hand);
+
+
 
 
 
