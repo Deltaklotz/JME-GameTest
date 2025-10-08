@@ -58,6 +58,7 @@ public class Main extends SimpleApplication {
     public static Spatial hand;
     private static Vector3f handOffset;
     private static Node handNode;
+    private static Node playerView;
     // strong structure for entitydata:
     // {playerName : Yrotation § playerX § playerY § playerZ}
 
@@ -280,16 +281,19 @@ public class Main extends SimpleApplication {
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
         // Hand
+        playerView = new Node("PlayerView");
+        playerView.setLocalTranslation(new Vector3f(0, 1.5f, 0)); // camera height relative to player
+        rootNode.attachChild(playerView);
+
         hand = assetManager.loadModel("models/hand.obj"); // or create a Box/Geometry
-        handOffset = new Vector3f(0.5f, -0.5f, -1.5f);
-        //cam.setFrustumNear(0.01f);
+        handOffset = new Vector3f(0.5f, -0.5f, -1f);
+        cam.setFrustumPerspective(45, cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
         hand.setLocalScale(0.2f); // scale to match scene
         rootNode.attachChild(hand);
         handNode = new Node("HandNode");
         handNode.attachChild(hand);
         hand.setLocalTranslation(handOffset);
-        rootNode.attachChild(handNode);
-
+        playerView.attachChild(handNode);
 
 
 
@@ -357,7 +361,9 @@ public class Main extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         Vector3f camPos = cam.getLocation();
         Quaternion camRot = cam.getRotation();
-        handNode.setLocalTranslation(camPos);
+        //handNode.setLocalTranslation(camPos);
+        playerView.setLocalTranslation(player.getPhysicsLocation().add(0, 1.5f, 0)); // camera height
+        //handNode.setLocalTranslation(camPos.add(camRot.mult(handOffset)));
         //hand.setLocalRotation(camRot);
         handNode.setLocalRotation(RotationUtil.fromDegrees(-getPlayerRotationX(), getPlayerRotationY()+180, 0));
 
