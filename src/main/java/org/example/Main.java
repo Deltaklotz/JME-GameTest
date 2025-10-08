@@ -55,6 +55,9 @@ public class Main extends SimpleApplication {
 
     public static Hashtable<String, Node> playerEntities = new Hashtable<>();
     public static Hashtable<String, String> playerData = new Hashtable<>();
+    public static Spatial hand;
+    private static Vector3f handOffset;
+    private static Node handNode;
     // strong structure for entitydata:
     // {playerName : Yrotation § playerX § playerY § playerZ}
 
@@ -132,6 +135,17 @@ public class Main extends SimpleApplication {
             float yaw = angles[1]; // Yaw around Y-axis in radians
             float yawDegrees = yaw * FastMath.RAD_TO_DEG;
             return yawDegrees;
+        }
+        public float getPlayerRotationX() {
+            if (player == null) {
+                return 0f;
+            }
+
+            Quaternion camRot = cam.getRotation();
+            float[] angles = camRot.toAngles(null); // returns [X, Y, Z] in radians
+            float pitch = angles[0]; // Yaw around Y-axis in radians
+            float pitchDegrees = pitch * FastMath.RAD_TO_DEG;
+            return pitchDegrees;
         }
 
 
@@ -233,6 +247,7 @@ public class Main extends SimpleApplication {
         Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         //groundMat.setTexture("DiffuseMap", ground_tex);
         groundMat.setColor("Diffuse",ColorRGBA.Green);
+        groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
         rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
         //viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
@@ -265,14 +280,16 @@ public class Main extends SimpleApplication {
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
         // Hand
-        Spatial hand = assetManager.loadModel("models/hand.obj"); // or create a Box/Geometry
-        CameraNode camNode = new CameraNode("CamNode", cam);
-        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-        camNode.attachChild(hand);
-        cam.setFrustumNear(1f); // default is 1, too large for close objects
-        hand.setLocalTranslation(0.5f, 2f, -1f);
+        hand = assetManager.loadModel("models/hand.obj"); // or create a Box/Geometry
+        handOffset = new Vector3f(0.5f, -0.5f, -1.5f);
+        //cam.setFrustumNear(0.01f);
         hand.setLocalScale(0.2f); // scale to match scene
         rootNode.attachChild(hand);
+        handNode = new Node("HandNode");
+        handNode.attachChild(hand);
+        hand.setLocalTranslation(handOffset);
+        rootNode.attachChild(handNode);
+
 
 
 
@@ -289,8 +306,6 @@ public class Main extends SimpleApplication {
         model.getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0,90,0));
         model.setLocalScale(1.25f);
         model.setShadowMode(RenderQueue.ShadowMode.Cast);
-        rootNode.attachChild(model);
-
         //instantly remove the first model, comment to show
         model.removeFromParent();
         bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
@@ -340,6 +355,12 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
+        Vector3f camPos = cam.getLocation();
+        Quaternion camRot = cam.getRotation();
+        handNode.setLocalTranslation(camPos);
+        //hand.setLocalRotation(camRot);
+        handNode.setLocalRotation(RotationUtil.fromDegrees(-getPlayerRotationX(), getPlayerRotationY()+180, 0));
+
         walkDirection.set(0, 0, 0);
         if (left) walkDirection.addLocal(cam.getLeft());
         if (right) walkDirection.addLocal(cam.getLeft().negate());
