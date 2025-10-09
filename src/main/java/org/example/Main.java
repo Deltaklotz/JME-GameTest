@@ -15,11 +15,14 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.effect.shapes.EmitterSphereShape;
+import com.jme3.environment.EnvironmentCamera;
+import com.jme3.environment.LightProbeFactory;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.*;
@@ -195,7 +198,7 @@ public class Main extends SimpleApplication {
         stateManager.attach(bulletAppState);
 
         //test data for testing entity creation
-        //playerData.put("heimat0729", "130§5§2§5");
+        playerData.put("heimat0729", "130§5§2§5");
 
         //initialize textures
         Texture semibot_1 = assetManager.loadTexture("textures/semibot/semibot_01.png");
@@ -212,24 +215,24 @@ public class Main extends SimpleApplication {
         ground_tex.setWrap(Texture.WrapMode.Repeat);
 
         //create materials
-        semiMat1 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat3 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat4 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat5 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat6 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat7 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat8 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat9 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        semiMat1.setTexture("DiffuseMap", semibot_1);
-        semiMat2.setTexture("DiffuseMap", semibot_2);
-        semiMat3.setTexture("DiffuseMap", semibot_3);
-        semiMat4.setTexture("DiffuseMap", semibot_4);
-        semiMat5.setTexture("DiffuseMap", semibot_5);
-        semiMat6.setTexture("DiffuseMap", semibot_6);
-        semiMat7.setTexture("DiffuseMap", semibot_7);
-        semiMat8.setTexture("DiffuseMap", semibot_8);
-        semiMat9.setTexture("DiffuseMap", semibot_9);
+        semiMat1 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat2 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat3 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat4 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat5 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat6 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat7 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat8 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat9 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        semiMat1.setTexture("BaseColorMap", semibot_1);
+        semiMat2.setTexture("BaseColorMap", semibot_2);
+        semiMat3.setTexture("BaseColorMap", semibot_3);
+        semiMat4.setTexture("BaseColorMap", semibot_4);
+        semiMat5.setTexture("BaseColorMap", semibot_5);
+        semiMat6.setTexture("BaseColorMap", semibot_6);
+        semiMat7.setTexture("BaseColorMap", semibot_7);
+        semiMat8.setTexture("BaseColorMap", semibot_8);
+        semiMat9.setTexture("BaseColorMap", semibot_9);
         matList.add(semiMat1);
         matList.add(semiMat2);
         matList.add(semiMat3);
@@ -239,13 +242,18 @@ public class Main extends SimpleApplication {
         matList.add(semiMat7);
         matList.add(semiMat8);
         matList.add(semiMat9);
+        for (int i=0; i<9; i++){
+            matList.get(i).setParam("Roughness", 0.5f);
+            matList.get(i).setParam("Metallic", 0f);
+        }
 
         Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         //groundMat.setTexture("DiffuseMap", ground_tex);
         groundMat.setColor("Diffuse",ColorRGBA.Green);
         //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
-        rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
+        Spatial sky = SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap);
+        rootNode.attachChild(sky);
         //viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
 
         // Create a directional light (like the sun)
@@ -254,14 +262,24 @@ public class Main extends SimpleApplication {
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
 
-        AmbientLight ambient = new AmbientLight();
-        ambient.setColor(ColorRGBA.White.mult(0.3f)); // softer, dimmer light
-        rootNode.addLight(ambient);
+        Spatial probeHolder = this.getAssetManager().loadModel("defaultProbe.j3o");
+        LightProbe probe = (LightProbe)probeHolder.getLocalLightList().get(0);
+        probe.setPosition(Vector3f.ZERO);
+
+        probeHolder.removeLight(probe);
+        rootNode.addLight(probe);
+
+
 
         final int SHADOWMAP_SIZE=1024;
         DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
         dlsr.setLight(sun);
         viewPort.addProcessor(dlsr);
+
+
+
+
+
 
 
         // Ground
@@ -281,6 +299,19 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(playerView);
 
         Spatial hand = assetManager.loadModel("models/player_hand_anim.glb");
+        handOffset = new Vector3f(0.5f, -0.5f, -.75f);
+        cam.setFrustumPerspective(45, (float) cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
+        hand.setLocalScale(0.2f); // scale to match scene
+        Material handMat = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
+        handMat.setColor("BaseColor", ColorRGBA.Red);
+        handMat.setParam("Roughness", 0.5f);
+        handMat.setParam("Metallic", 0f);
+        rootNode.attachChild(hand);
+        handNode = new Node("HandNode");
+        handNode.attachChild(hand);
+        hand.setLocalTranslation(handOffset);
+        playerView.attachChild(handNode);
+        hand.setMaterial(handMat);
 
         AnimComposer composer = null;
         for (Spatial s : ((Node) hand).getChildren()) {
@@ -290,52 +321,12 @@ public class Main extends SimpleApplication {
                 break;
             }
         }
-
         if (composer == null) {
             System.out.println("No AnimComposer found in any child node.");
         } else {
             System.out.println("Animations: " + composer.getAnimClipsNames());
         }
-
-
-
-        composer.setCurrentAction("idle", AnimComposer.DEFAULT_LAYER, true);
-
-
-
-
-
-
-
-
-
-        handOffset = new Vector3f(0.5f, -0.5f, -1f);
-        cam.setFrustumPerspective(45, cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
-        hand.setLocalScale(0.2f); // scale to match scene
-        rootNode.attachChild(hand);
-        handNode = new Node("HandNode");
-        handNode.attachChild(hand);
-        hand.setLocalTranslation(handOffset);
-        playerView.attachChild(handNode);
-
-
-
-
-
-        // Load model
-        Spatial model = assetManager.loadModel("models/semibot.obj");
-        CapsuleCollisionShape modelcoll = new CapsuleCollisionShape(1f,2f);
-        RigidBodyControl modelcontroll = new RigidBodyControl(modelcoll, 0);
-        model.addControl(modelcontroll);
-        bulletAppState.getPhysicsSpace().add(modelcontroll);
-        model.setMaterial(semiMat1);
-        model.getControl(RigidBodyControl.class).setPhysicsLocation(new Vector3f(0,2,5));
-        model.getControl(RigidBodyControl.class).setPhysicsRotation(RotationUtil.fromDegrees(0,90,0));
-        model.setLocalScale(1.25f);
-        model.setShadowMode(RenderQueue.ShadowMode.Cast);
-        //instantly remove the first model, comment to show
-        model.removeFromParent();
-        bulletAppState.getPhysicsSpace().remove(model.getControl(RigidBodyControl.class));
+        //composer.setCurrentAction("idle ", AnimComposer.DEFAULT_LAYER, true);
 
 
 
@@ -382,12 +373,7 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        Vector3f camPos = cam.getLocation();
-        Quaternion camRot = cam.getRotation();
-        //handNode.setLocalTranslation(camPos);
         playerView.setLocalTranslation(player.getPhysicsLocation().add(0, 1.5f, 0)); // camera height
-        //handNode.setLocalTranslation(camPos.add(camRot.mult(handOffset)));
-        //hand.setLocalRotation(camRot);
         handNode.setLocalRotation(RotationUtil.fromDegrees(-getPlayerRotationX(), getPlayerRotationY()+180, 0));
 
         walkDirection.set(0, 0, 0);
