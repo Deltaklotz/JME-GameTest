@@ -1,56 +1,27 @@
 package org.example;
 
 import com.jme3.anim.AnimComposer;
-import com.jme3.animation.AnimChannel;
-import com.jme3.animation.AnimControl;
-import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
-import com.jme3.effect.shapes.EmitterSphereShape;
-import com.jme3.environment.EnvironmentCamera;
-import com.jme3.environment.LightProbeFactory;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
-import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.*;
-import com.jme3.post.FilterPostProcessor;
-import com.jme3.renderer.Caps;
-import com.jme3.renderer.Renderer;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
-import com.jme3.scene.control.CameraControl;
-import com.jme3.scene.instancing.InstancedNode;
-import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Quad;
-import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
-import com.jme3.system.JmeSystem;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
 import java.nio.FloatBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import jme3tools.optimize.GeometryBatchFactory;
-import org.example.RotationUtil;
-import org.example.TextUtil;
 
 public class Main extends SimpleApplication {
     public static Main instance; // static reference for networking thread
@@ -262,7 +233,7 @@ public class Main extends SimpleApplication {
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
 
-        Spatial probeHolder = this.getAssetManager().loadModel("Sky_Cloudy.j3o");
+        Spatial probeHolder = this.getAssetManager().loadModel("textures/sky/Sky_Cloudy.j3o");
         LightProbe probe = (LightProbe)probeHolder.getLocalLightList().get(0);
         probe.setPosition(Vector3f.ZERO);
 
