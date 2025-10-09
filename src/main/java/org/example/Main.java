@@ -15,7 +15,9 @@ import com.jme3.material.Material;
 import com.jme3.math.*;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
+import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.shadow.PssmShadowRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
@@ -242,9 +244,12 @@ public class Main extends SimpleApplication {
 
 
 
-        final int SHADOWMAP_SIZE=1024;
-        DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+        final int SHADOWMAP_SIZE=1536;
+        DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 4);
         dlsr.setLight(sun);
+        dlsr.setLambda(0.65f); // distribution of splits; closer to camera gets higher resolution
+        dlsr.setShadowIntensity(0.6f);
+        dlsr.setShadowCompareMode(CompareMode.Hardware);
         viewPort.addProcessor(dlsr);
 
 
@@ -297,7 +302,7 @@ public class Main extends SimpleApplication {
         } else {
             System.out.println("Animations: " + composer.getAnimClipsNames());
         }
-        //composer.setCurrentAction("idle ", AnimComposer.DEFAULT_LAYER, true);
+        composer.setCurrentAction("idle", AnimComposer.DEFAULT_LAYER, true);
 
 
 
