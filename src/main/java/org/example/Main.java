@@ -262,7 +262,7 @@ public class Main extends SimpleApplication {
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
 
-        Spatial probeHolder = this.getAssetManager().loadModel("defaultProbe.j3o");
+        Spatial probeHolder = this.getAssetManager().loadModel("Sky_Cloudy.j3o");
         LightProbe probe = (LightProbe)probeHolder.getLocalLightList().get(0);
         probe.setPosition(Vector3f.ZERO);
 
