@@ -1,5 +1,9 @@
 package org.example;
 
+import com.jme3.anim.AnimComposer;
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
@@ -174,17 +178,8 @@ public class Main extends SimpleApplication {
         return new Vector3f(x, y, z);
     }
 
-    public static Mesh getMeshFromSpatial(Spatial spatial) {
-        if (spatial instanceof Geometry) {
-            return ((Geometry) spatial).getMesh();
-        } else if (spatial instanceof Node) {
-            for (Spatial child : ((Node) spatial).getChildren()) {
-                Mesh m = getMeshFromSpatial(child);
-                if (m != null) return m;
-            }
-        }
-        return null;
-    }
+
+
 
 
 
@@ -248,7 +243,7 @@ public class Main extends SimpleApplication {
         Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         //groundMat.setTexture("DiffuseMap", ground_tex);
         groundMat.setColor("Diffuse",ColorRGBA.Green);
-        groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+        //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
         rootNode.attachChild(SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap));
         //viewPort.setBackgroundColor(ColorRGBA.fromRGBA255(64, 223, 255, 255));
@@ -285,7 +280,35 @@ public class Main extends SimpleApplication {
         playerView.setLocalTranslation(new Vector3f(0, 1.5f, 0)); // camera height relative to player
         rootNode.attachChild(playerView);
 
-        hand = assetManager.loadModel("models/hand.obj"); // or create a Box/Geometry
+        Spatial hand = assetManager.loadModel("models/player_hand_anim.glb");
+
+        AnimComposer composer = null;
+        for (Spatial s : ((Node) hand).getChildren()) {
+            composer = s.getControl(AnimComposer.class);
+            if (composer != null) {
+                System.out.println("Found AnimComposer on: " + s.getName());
+                break;
+            }
+        }
+
+        if (composer == null) {
+            System.out.println("No AnimComposer found in any child node.");
+        } else {
+            System.out.println("Animations: " + composer.getAnimClipsNames());
+        }
+
+
+
+        composer.setCurrentAction("idle", AnimComposer.DEFAULT_LAYER, true);
+
+
+
+
+
+
+
+
+
         handOffset = new Vector3f(0.5f, -0.5f, -1f);
         cam.setFrustumPerspective(45, cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
         hand.setLocalScale(0.2f); // scale to match scene

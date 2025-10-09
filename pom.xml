@@ -18,38 +18,44 @@
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-core</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-desktop</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-lwjgl3</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-effects</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-jogg</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.jmonkeyengine</groupId>
             <artifactId>jme3-jbullet</artifactId>
-            <version>3.6.1-stable</version>
+            <version>3.7.0-stable</version>
         </dependency>
         <dependency>
             <groupId>org.java-websocket</groupId>
             <artifactId>Java-WebSocket</artifactId>
             <version>1.5.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-plugins</artifactId>
+            <version>3.7.0-stable</version>
+        </dependency>
+
 
 
     </dependencies>
