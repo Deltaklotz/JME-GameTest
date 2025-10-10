@@ -9,6 +9,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
@@ -234,6 +235,11 @@ public class Main extends SimpleApplication {
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
 
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(0.5f)); // 50% intensity
+        rootNode.addLight(ambient);
+
+
         Spatial probeHolder = this.getAssetManager().loadModel("textures/sky/Sky_Cloudy.j3o");
         LightProbe probe = (LightProbe)probeHolder.getLocalLightList().get(0);
         probe.setPosition(Vector3f.ZERO);
@@ -247,13 +253,29 @@ public class Main extends SimpleApplication {
         viewPort.addProcessor(dlsr);
 
 
-        Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
-        Texture groundMR_tex = assetManager.loadTexture("textures/karambit/karambitTex_1_RoughnessMetallic.png");
-        ground_tex.setWrap(Texture.WrapMode.Repeat);
-        Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
-        groundMat.setTexture("Tex1",ground_tex);
-        groundMat.setFloat("Tex1Scale", 64f);
-        //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+
+        Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
+// or if you only need few textures, maybe “Common/MatDefs/Terrain/PBRTerrain.j3md”
+        Texture groundDiff = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_albedo.png");
+        groundDiff.setWrap(Texture.WrapMode.Repeat);
+        Texture groundNor = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_normal-dx.png");
+        groundNor.setWrap(Texture.WrapMode.Repeat);
+        Texture groundAo = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_roughness.png");
+        groundAo.setWrap(Texture.WrapMode.Repeat);
+
+        groundMat.setTexture("DiffuseMap", groundDiff);
+        groundMat.setTexture("NormalMap", groundNor);
+        groundMat.setTexture("AlphaMap", groundAo);
+
+
+
+// scale tiling
+        groundMat.setFloat("DiffuseMap_0_scale", 64f);
+
+
+
+
+
         HillHeightMap heightmap = null;
         try {
             heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
