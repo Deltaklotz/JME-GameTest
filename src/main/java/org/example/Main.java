@@ -9,6 +9,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
@@ -19,6 +20,11 @@ import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.PssmShadowRenderer;
 import com.jme3.system.AppSettings;
+import com.jme3.terrain.Terrain;
+import com.jme3.terrain.geomipmap.TerrainQuad;
+import com.jme3.terrain.heightmap.AbstractHeightMap;
+import com.jme3.terrain.heightmap.HillHeightMap;
+import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
@@ -184,8 +190,7 @@ public class Main extends SimpleApplication {
         Texture semibot_8 = assetManager.loadTexture("textures/semibot/semibot_08.png");
         Texture semibot_9 = assetManager.loadTexture("textures/semibot/semibot_09.png");
 
-        Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
-        ground_tex.setWrap(Texture.WrapMode.Repeat);
+
 
         //create materials
         semiMat1 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
@@ -220,10 +225,7 @@ public class Main extends SimpleApplication {
             matList.get(i).setParam("Metallic", 0f);
         }
 
-        Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        //groundMat.setTexture("DiffuseMap", ground_tex);
-        groundMat.setColor("Diffuse",ColorRGBA.Green);
-        //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+
 
         Spatial sky = SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap);
         rootNode.attachChild(sky);
@@ -235,6 +237,11 @@ public class Main extends SimpleApplication {
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
 
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(0.5f)); // 50% intensity
+        rootNode.addLight(ambient);
+
+
         Spatial probeHolder = this.getAssetManager().loadModel("textures/sky/Sky_Cloudy.j3o");
         LightProbe probe = (LightProbe)probeHolder.getLocalLightList().get(0);
         probe.setPosition(Vector3f.ZERO);
@@ -244,22 +251,43 @@ public class Main extends SimpleApplication {
 
 
 
-        final int SHADOWMAP_SIZE=1536;
-        DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 4);
+        final int SHADOWMAP_SIZE=1024;
+        DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
         dlsr.setLight(sun);
-        dlsr.setLambda(0.65f); // distribution of splits; closer to camera gets higher resolution
-        dlsr.setShadowIntensity(0.6f);
-        dlsr.setShadowCompareMode(CompareMode.Hardware);
         viewPort.addProcessor(dlsr);
 
 
 
+        Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
+// or if you only need few textures, maybe “Common/MatDefs/Terrain/PBRTerrain.j3md”
+        Texture groundDiff = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_albedo.png");
+        groundDiff.setWrap(Texture.WrapMode.Repeat);
+        Texture groundNor = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_normal-dx.png");
+        groundNor.setWrap(Texture.WrapMode.Repeat);
+        Texture groundAo = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_roughness.png");
+        groundAo.setWrap(Texture.WrapMode.Repeat);
+
+        groundMat.setTexture("DiffuseMap", groundDiff);
+        groundMat.setTexture("NormalMap", groundNor);
+        groundMat.setTexture("AlphaMap", groundAo);
+
+
+
+// scale tiling
+        groundMat.setFloat("DiffuseMap_0_scale", 64f);
 
 
 
 
-        // Ground
-        Spatial ground = assetManager.loadModel("models/untitled.obj");
+
+        HillHeightMap heightmap = null;
+        try {
+            heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        heightmap.load();
+        Spatial ground = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
         ground.setMaterial(groundMat);
         ground.setLocalScale(1f);
         ground.setLocalTranslation(0, -1f, 0);
@@ -302,7 +330,7 @@ public class Main extends SimpleApplication {
         } else {
             System.out.println("Animations: " + composer.getAnimClipsNames());
         }
-        composer.setCurrentAction("idle", AnimComposer.DEFAULT_LAYER, true);
+        //composer.setCurrentAction("idle ", AnimComposer.DEFAULT_LAYER, true);
 
 
 
