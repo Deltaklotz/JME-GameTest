@@ -6,6 +6,7 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.export.binary.BinaryExporter;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -14,8 +15,10 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
 import com.jme3.math.*;
+import com.jme3.post.FilterPostProcessor;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
+import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.PssmShadowRenderer;
@@ -27,8 +30,13 @@ import com.jme3.terrain.heightmap.HillHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
+import com.jme3.water.WaterFilter;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.*;
 
 public class Main extends SimpleApplication {
@@ -256,6 +264,12 @@ public class Main extends SimpleApplication {
         dlsr.setLight(sun);
         viewPort.addProcessor(dlsr);
 
+        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        WaterFilter water = new WaterFilter(rootNode, sun.getDirection());
+        water.setWaterHeight(-145f);
+        fpp.addFilter(water);
+        viewPort.addProcessor(fpp);
+
 
 
         Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
@@ -274,28 +288,42 @@ public class Main extends SimpleApplication {
 
 
 // scale tiling
-        groundMat.setFloat("DiffuseMap_0_scale", 64f);
+        groundMat.setFloat("DiffuseMap_0_scale", 128f);
 
 
 
 
 
-        HillHeightMap heightmap = null;
-        try {
-            heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Texture heightMapImage = assetManager.loadTexture("textures/worldheight3.png");
+        AbstractHeightMap heightmap = null;
+        heightmap = new ImageBasedHeightMap(heightMapImage.getImage(), 1f);
         heightmap.load();
-        Spatial ground = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
+        Spatial ground = new TerrainQuad("terrain", 63, 1025, heightmap.getHeightMap());
         ground.setMaterial(groundMat);
-        ground.setLocalScale(1f);
-        ground.setLocalTranslation(0, -1f, 0);
+        ground.setLocalScale(1f, 0.5f, 1f);
+        ground.setLocalTranslation(0, -150f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
         ground.addControl(groundPhys);
         ground.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Hand
         playerView = new Node("PlayerView");
