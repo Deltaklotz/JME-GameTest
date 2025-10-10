@@ -17,6 +17,11 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.system.AppSettings;
+import com.jme3.terrain.Terrain;
+import com.jme3.terrain.geomipmap.TerrainQuad;
+import com.jme3.terrain.heightmap.AbstractHeightMap;
+import com.jme3.terrain.heightmap.HillHeightMap;
+import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
@@ -182,8 +187,7 @@ public class Main extends SimpleApplication {
         Texture semibot_8 = assetManager.loadTexture("textures/semibot/semibot_08.png");
         Texture semibot_9 = assetManager.loadTexture("textures/semibot/semibot_09.png");
 
-        Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
-        ground_tex.setWrap(Texture.WrapMode.Repeat);
+
 
         //create materials
         semiMat1 = new Material(assetManager, "Common/MatDefs/Light/PBRLighting.j3md");
@@ -218,10 +222,7 @@ public class Main extends SimpleApplication {
             matList.get(i).setParam("Metallic", 0f);
         }
 
-        Material groundMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        //groundMat.setTexture("DiffuseMap", ground_tex);
-        groundMat.setColor("Diffuse",ColorRGBA.Green);
-        //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+
 
         Spatial sky = SkyFactory.createSky(getAssetManager(), "textures/sky/sky_25_2k.png", SkyFactory.EnvMapType.EquirectMap);
         rootNode.attachChild(sky);
@@ -240,21 +241,27 @@ public class Main extends SimpleApplication {
         probeHolder.removeLight(probe);
         rootNode.addLight(probe);
 
-
-
         final int SHADOWMAP_SIZE=1024;
         DirectionalLightShadowRenderer dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
         dlsr.setLight(sun);
         viewPort.addProcessor(dlsr);
 
 
-
-
-
-
-
-        // Ground
-        Spatial ground = assetManager.loadModel("models/untitled.obj");
+        Texture ground_tex = assetManager.loadTexture("textures/grass_online.jpg");
+        Texture groundMR_tex = assetManager.loadTexture("textures/karambit/karambitTex_1_RoughnessMetallic.png");
+        ground_tex.setWrap(Texture.WrapMode.Repeat);
+        Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
+        groundMat.setTexture("Tex1",ground_tex);
+        groundMat.setFloat("Tex1Scale", 64f);
+        //groundMat.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+        HillHeightMap heightmap = null;
+        try {
+            heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        heightmap.load();
+        Spatial ground = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
         ground.setMaterial(groundMat);
         ground.setLocalScale(1f);
         ground.setLocalTranslation(0, -1f, 0);
