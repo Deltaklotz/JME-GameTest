@@ -298,6 +298,7 @@ public class Main extends SimpleApplication {
         AbstractHeightMap heightmap = null;
         heightmap = new ImageBasedHeightMap(heightMapImage.getImage(), 1f);
         heightmap.load();
+        heightmap.smooth(0.9f, 1);
         Spatial ground = new TerrainQuad("terrain", 63, 1025, heightmap.getHeightMap());
         ground.setMaterial(groundMat);
         ground.setLocalScale(1f, 0.5f, 1f);
