@@ -14,6 +14,7 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.LightProbe;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.*;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.renderer.queue.RenderQueue;
@@ -31,6 +32,7 @@ import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 import com.jme3.water.WaterFilter;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,7 +187,7 @@ public class Main extends SimpleApplication {
         stateManager.attach(bulletAppState);
 
         //test data for testing entity creation
-        playerData.put("heimat0729", "130§5§2§5");
+        //playerData.put("heimat0729", "130§5§2§5");
 
         //initialize textures
         Texture semibot_1 = assetManager.loadTexture("textures/semibot/semibot_01.png");
@@ -266,35 +268,54 @@ public class Main extends SimpleApplication {
 
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
         WaterFilter water = new WaterFilter(rootNode, sun.getDirection());
-        water.setWaterHeight(-145f);
+        water.setWaterHeight(-133f);
         fpp.addFilter(water);
         viewPort.addProcessor(fpp);
 
 
 
+        /*
         Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
-// or if you only need few textures, maybe “Common/MatDefs/Terrain/PBRTerrain.j3md”
-        Texture groundDiff = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_albedo.png");
+        Texture groundDiff = assetManager.loadTexture("textures/terrain/grass.jpg");
         groundDiff.setWrap(Texture.WrapMode.Repeat);
-        Texture groundNor = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_normal-dx.png");
-        groundNor.setWrap(Texture.WrapMode.Repeat);
-        Texture groundAo = assetManager.loadTexture("textures/stylizedGrass/stylized-grass1_roughness.png");
+        Texture groundAo = assetManager.loadTexture("textures/mcwh.png");
         groundAo.setWrap(Texture.WrapMode.Repeat);
 
         groundMat.setTexture("DiffuseMap", groundDiff);
-        groundMat.setTexture("NormalMap", groundNor);
         groundMat.setTexture("AlphaMap", groundAo);
-
-
-
-// scale tiling
         groundMat.setFloat("DiffuseMap_0_scale", 128f);
 
+         */
+
+
+        Material groundMat = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
+        Texture groundSplat1 = assetManager.loadTexture("textures/terrain/splat5.png");
+        groundMat.setTexture("AlphaMap", groundSplat1);
+        //groundMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Additive);
+
+        Texture groundGrassDiff = assetManager.loadTexture("textures/terrain/grass1.png");
+        groundGrassDiff.setWrap(Texture.WrapMode.MirroredRepeat);
+        Texture groundPathDiff = assetManager.loadTexture("textures/terrain/sand.png");
+        groundPathDiff.setWrap(Texture.WrapMode.MirroredRepeat);
+        Texture groundRockDiff = assetManager.loadTexture("textures/terrain/grass2.png");
+        groundRockDiff.setWrap(Texture.WrapMode.MirroredRepeat);
+
+        groundMat.setTexture("DiffuseMap", groundGrassDiff);
+        groundMat.setFloat("DiffuseMap_0_scale", 24f);
+
+        groundMat.setTexture("DiffuseMap_1", groundRockDiff);
+        groundMat.setFloat("DiffuseMap_1_scale", 24f);
+
+        groundMat.setTexture("DiffuseMap_2", groundPathDiff);
+        groundMat.setFloat("DiffuseMap_2_scale", 64f);
 
 
 
 
-        Texture heightMapImage = assetManager.loadTexture("textures/worldheight3.png");
+
+
+
+        Texture heightMapImage = assetManager.loadTexture("textures/mcwh.png");
         AbstractHeightMap heightmap = null;
         heightmap = new ImageBasedHeightMap(heightMapImage.getImage(), 1f);
         heightmap.load();
@@ -305,7 +326,7 @@ public class Main extends SimpleApplication {
         ground.setLocalTranslation(0, -150f, 0);
         RigidBodyControl groundPhys = new RigidBodyControl(0.0f); // static
         ground.addControl(groundPhys);
-        ground.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+        ground.setShadowMode(RenderQueue.ShadowMode.Receive);
         rootNode.attachChild(ground);
         bulletAppState.getPhysicsSpace().add(groundPhys);
 
